@@ -1,78 +1,69 @@
-// src/pages/edit/BookEditPage.jsx
+// src/pages/update/BookUpdatePage.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import noneImg from "../../asserts/noneimg.png";
+import {
+    Box,
+    Grid,
+    Typography,
+    TextField,
+    Button,
+    Card,
+    CardActionArea,
+    CardMedia,
+} from "@mui/material";
 
-function BookEditPage() {
+function BookUpdatePage() {
     const navigate = useNavigate();
-    const { bookId } = useParams(); // /edit/:bookId 형태일 때 사용
     const location = useLocation();
 
-    // AI 이미지 페이지에서 변경된 이미지가 돌아올 수도 있다
-    const newCoverImage = location.state?.coverImage || null;
-    const newCoverImageId = location.state?.imageId || null;
+    // AiImagePage에서 돌아온 경우 들어오는 값들
+    const fromAi = location.state || {};
 
-    // 기존 책 정보를 저장
-    const [book, setBook] = useState(null);
+    const [book_id, setBookId] = useState(fromAi.book_id || 1);
+    const [title, setTitle] = useState(fromAi.title || "고양이와 함께한 순간");
+    const [author, setAuthor] = useState(fromAi.author || "이수린");
+    const [description, setDescription] = useState(fromAi.description || "책 내용!");
+    const [coverImage, setCoverImage] = useState(fromAi.coverImage || noneImg);
+    const [coverImageId, setCoverImageId] = useState(fromAi.imageId || 1001);
 
-    // 입력 상태
-    const [title, setTitle] = useState("");
-    const [author, setAuthor] = useState("");
-    const [description, setDescription] = useState("");
-    const [coverImage, setCoverImage] = useState("");
-    const [coverImageId, setCoverImageId] = useState(null);
-
-    // 수정 버튼 활성화 조건
-    const isFormValid =
+    // 버튼 활성화 여부
+    const isFormValid = !!(
         title.trim() &&
         author.trim() &&
         description.trim() &&
-        coverImage;
+        coverImage
+    );
 
-    // 책 정보 불러오기 (나중에 백엔드 붙이면 fetch로 교체)
     useEffect(() => {
-        // 지금은 더미로 테스트
-        // 나중엔 bookId로 GET /books/{id} 요청
-        const dummy = {
-            id: bookId,
-            title: "고양이와 함께한 순간",
-            author: "이수린",
-            description: "책 내용!",
-            coverImage: noneImg,
-            coverImageId: 1001,
-        };
-
-        setBook(dummy);
-        setTitle(dummy.title);
-        setAuthor(dummy.author);
-        setDescription(dummy.description);
-        setCoverImage(dummy.coverImage);
-        setCoverImageId(dummy.coverImageId);
-    }, [bookId]);
-
-    // AI 이미지 페이지에서 돌아온 경우 초기 이미지 덮어쓰기
-    useEffect(() => {
-        if (newCoverImage) {
-            setCoverImage(newCoverImage);
-            setCoverImageId(newCoverImageId);
+        // AiImagePage에서 돌아올 때 state가 갱신된 경우 반영
+        if (fromAi.coverImage) {
+            setCoverImage(fromAi.coverImage);
+            setCoverImageId(fromAi.imageId || null);
         }
-    }, [newCoverImage, newCoverImageId]);
+        if (fromAi.book_id) {
+            setBookId(fromAi.book_id);
+        }
+        if (fromAi.title) setTitle(fromAi.title);
+        if (fromAi.author) setAuthor(fromAi.author);
+        if (fromAi.description) setDescription(fromAi.description);
+    }, [fromAi]);
 
-    // ⭐ AI 이미지 페이지로 이동
     const goToAiImage = () => {
         navigate("/ai-image", {
             state: {
+                mode: "edit",   // ✅ 수정 모드
                 book: {
-                    id: bookId,
+                    book_id,
                     title,
                     author,
+                    description,
                 },
                 currentImageId: coverImageId,
             },
         });
     };
 
-    // 수정하기 요청
     const handleEdit = (e) => {
         e.preventDefault();
 
@@ -82,7 +73,7 @@ function BookEditPage() {
         }
 
         const payload = {
-            id: bookId,
+            book_id,
             title,
             author,
             description,
@@ -90,145 +81,206 @@ function BookEditPage() {
             coverImageId,
         };
 
-        // 나중에 PUT /books/{id} 호출
         console.log("수정 데이터:", payload);
-        alert("수정 완료! (지금은 콘솔에서만 확인 가능)");
-
-        // 나중에 마이페이지로 이동할 수도 있음
-        // navigate("/mypage");
+        alert("수정 완료!");
     };
 
-    if (!book) return <div>로딩 중...</div>;
-
     return (
-        <div style={{ padding: "40px",maxWidth: "960px",   //  가운데 폭 제한
-            margin: "0 auto", }}>
-            <h2 style={{ marginBottom: "16px" }}>도서 수정</h2>
+        <Box
+            sx={{
+                width: "100%",
+                paddingTop: "218px",
+                paddingLeft: "280px",
+                boxSizing: "border-box",
+            }}
+        >
+            {/* 타이틀 */}
+            <Typography
+                sx={{
+                    fontSize: "30px",
+                    fontWeight: 700,
+                    marginBottom: "20px",
+                }}
+            >
+                도서 수정
+            </Typography>
 
-            <form onSubmit={handleEdit}>
-                <div style={{ display: "flex", gap: "40px",  }}>
-                    {/* LEFT: 이미지 */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <div
-                            style={{
-                                width: "320px",
-                                height: "400px",
-                                border: "1px solid #eee",
-                                borderRadius: "6px",
-                                overflow: "hidden",
-                                backgroundColor: "#fafafa",
+            <Box component="form" onSubmit={handleEdit}>
+                <Grid container columnSpacing={10}>
+                    {/* LEFT - 이미지 영역 */}
+                    <Grid item>
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Card
+                                sx={{
+                                    width: 500,
+                                    height: 550,
+                                    borderRadius: 2,
+                                    border: "1px dashed #ccc",
+                                    boxShadow: "none",
+                                    bgcolor: "#fafafa",
+                                }}
+                            >
+                                <CardActionArea
+                                    onClick={goToAiImage}
+                                    sx={{
+                                        width: "100%",
+                                        height: "100%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        image={coverImage || noneImg}
+                                        alt="book-cover"
+                                        sx={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                        }}
+                                    />
+                                </CardActionArea>
+                            </Card>
+
+                            <Button
+                                type="button"
+                                variant="outlined"
+                                onClick={goToAiImage}
+                                sx={{
+                                    mt: 2.0,
+                                    width: 150,
+                                    height: 36,
+                                    fontSize: 14,
+                                    bgcolor: "#000",
+                                    color: "#fff",
+                                    ml: "340px",
+                                    "&:hover": {
+                                        bgcolor: "#222",
+                                    },
+                                }}
+                            >
+                                이미지 재생성
+                            </Button>
+                        </Box>
+                    </Grid>
+
+                    {/* RIGHT - 입력 영역 */}
+                    <Grid item xs={6}>
+                        <Box
+                            sx={{
+                                maxWidth: 600,
                                 display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
+                                flexDirection: "column",
+                                gap: 3,
+                                pt: "20px",
                             }}
                         >
-                            <img
-                                src={coverImage}
-                                alt="cover"
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
+                            {/* 제목 */}
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                                <Box sx={{ width: 60, mr: 3 }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                                        제목
+                                    </Typography>
+                                </Box>
+
+                                <TextField
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="등록할 제목을 입력해주세요."
+                                    sx={{
+                                        width: "500px",
+                                        "& .MuiInputBase-root": {
+                                            height: "42px",
+                                        },
+                                        "& .MuiInputBase-input": {
+                                            padding: "8px",
+                                        },
+                                    }}
+                                />
+                            </Box>
+
+                            {/* 저자 */}
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                                <Box sx={{ width: 60, mr: 3 }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                                        저자
+                                    </Typography>
+                                </Box>
+
+                                <TextField
+                                    value={author}
+                                    onChange={(e) => setAuthor(e.target.value)}
+                                    placeholder="등록할 저자를 입력해주세요."
+                                    sx={{
+                                        width: "500px",
+                                        "& .MuiInputBase-root": {
+                                            height: "42px",
+                                        },
+                                        "& .MuiInputBase-input": {
+                                            padding: "8px",
+                                        },
+                                    }}
+                                />
+                            </Box>
+
+                            {/* 내용 */}
+                            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                                <Box sx={{ width: 60, mr: 3, pt: 1 }}>
+                                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                                        내용
+                                    </Typography>
+                                </Box>
+
+                                <TextField
+                                    multiline
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="등록할 설명을 입력해주세요."
+                                    sx={{
+                                        width: "500px",
+                                        "& .MuiInputBase-root": {
+                                            padding: 0,
+                                        },
+                                        "& textarea": {
+                                            minHeight: "350px",
+                                            padding: "10px",
+                                        },
+                                    }}
+                                />
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    width: "580px",
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    mt: 0.5,
                                 }}
-                            />
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={goToAiImage}
-                            style={{
-                                marginTop: "16px",
-                                width: "180px",
-                                height: "36px",
-                                backgroundColor: "#222",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                fontSize: "14px",
-                            }}
-                        >
-                            이미지 재생성
-                        </button>
-                    </div>
-
-                    {/* RIGHT: 입력 영역 */}
-                    <div style={{ flex: 1 }}>
-                        <div style={{ marginBottom: "16px" }}>
-                            <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                                제목
-                            </label>
-                            <input
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    height: "38px",
-                                    padding: "8px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "4px",
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: "16px" }}>
-                            <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                                저자
-                            </label>
-                            <input
-                                type="text"
-                                value={author}
-                                onChange={(e) => setAuthor(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    height: "38px",
-                                    padding: "8px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "4px",
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: "16px" }}>
-                            <label style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-                                내용
-                            </label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                style={{
-                                    width: "100%",
-                                    height: "200px",
-                                    padding: "10px",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "4px",
-                                    resize: "vertical",
-                                }}
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={!isFormValid}
-                            style={{
-                                marginTop: "24px",
-                                width: "140px",
-                                height: "40px",
-                                backgroundColor: isFormValid ? "#222" : "#aaa",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: isFormValid ? "pointer" : "not-allowed",
-                            }}
-                        >
-                            수정
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+                            >
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    disabled={!isFormValid}
+                                    sx={{
+                                        width: 90,
+                                        height: 40,
+                                        fontSize: 14,
+                                        bgcolor: isFormValid ? "#222" : "#aaa",
+                                        "&:hover": {
+                                            bgcolor: isFormValid ? "#333" : "#aaa",
+                                        },
+                                    }}
+                                >
+                                    수정
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
+        </Box>
     );
 }
 
-export default BookEditPage;
+export default BookUpdatePage;
