@@ -149,15 +149,17 @@
 }
 
 .comment-delete-icon {
-  width: 19px;
-  height: 19px;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
 }
 
 
 
 /* ------------------- 댓글 수정 버튼 ------------------- */
 .comment-actions {
-  gap: 3px;
+  gap: 10px;
+  margin-right: 10px;
 }
 
 .comment-edit-btn{
@@ -167,7 +169,7 @@
 }
 
 .comment-edit-icon {
-  width: 24px;
-  height: 24px;
-  margin-bottom: -2px;
+  width: 23px;
+  height: 23px;
+
 }
