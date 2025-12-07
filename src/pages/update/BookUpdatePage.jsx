@@ -13,7 +13,7 @@ import {
     CardMedia,
 } from "@mui/material";
 
-// ✅ 날짜를 "YYYY-MM-DD"로 만드는 유틸 함수
+// 날짜를 "YYYY-MM-DD"로 만드는 유틸 함수
 function formatDateToYMD(date = new Date()) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -21,15 +21,14 @@ function formatDateToYMD(date = new Date()) {
     return `${year}-${month}-${day}`;
 }
 
-// ❌ function BookUpdatePage({bookList}, {setBookList})
-// 👉 props는 하나의 객체로 받아야 함
+// props는 하나의 객체로 받기
 function BookUpdatePage({ bookList, setBookList }) {
     const navigate = useNavigate();
     const location = useLocation();
 
     const fromState = location.state || {};
 
-    // ✅ id 이름 통일 (book_id로 넘어와도 대비)
+    // id 이름 통일 (id 또는 book_id)
     const initialId = fromState.id ?? fromState.book_id ?? 1;
 
     const [id] = useState(initialId);
@@ -47,13 +46,13 @@ function BookUpdatePage({ bookList, setBookList }) {
         fromState.imageId ?? fromState.coverImageId ?? 1001
     );
 
-    // 🔹 등록일은 그대로 유지해야 하니까 state로 들고 있음
+    // 등록일은 그대로 유지
     const [regTime] = useState(fromState.reg_time || null);
 
     const isFormValid =
         title.trim() && author.trim() && description.trim() && coverImage;
 
-    // ✅ AiImagePage로 이동 (수정 모드)
+    // AiImagePage로 이동 (수정 모드)
     const goToAiImage = () => {
         navigate("/ai-image", {
             state: {
@@ -69,7 +68,8 @@ function BookUpdatePage({ bookList, setBookList }) {
         });
     };
 
-    const handleEdit = (e) => {
+    // 도서 수정
+    const handleEdit = async (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
@@ -77,34 +77,75 @@ function BookUpdatePage({ bookList, setBookList }) {
             return;
         }
 
-        // 📦 수정된 책 정보
-        const payload = {
+        // ✅ 백엔드 스펙에 맞는 payload (PUT /api/books/{bookId})
+        const apiPayload = {
+            book_id: id,
+            title: title.trim(),
+            content: description.trim(),
+            img_url: coverImage,
+            update_date: formatDateToYMD(),
+        };
+
+        let apiSuccess = false;
+
+        try {
+            const res = await fetch(`/api/books/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(apiPayload),
+            });
+
+            if (res.ok) {
+                const data = await res.json().catch(() => null); // { status, message } 예상
+                if (!data || data.status === "success") {
+                    apiSuccess = true;
+                    console.log("도서 수정 API 성공:", data);
+                } else {
+                    console.warn("도서 수정 API 응답 실패:", data);
+                }
+            } else {
+                console.warn("도서 수정 API HTTP 오류:", res.status);
+            }
+        } catch (err) {
+            console.warn("도서 수정 API 호출 실패(서버 미구동/연결 문제):", err);
+        }
+
+        // 📦 프론트에서 쓰는 전체 책 정보
+        const updatedBook = {
             id,
             title: title.trim(),
             author: author.trim(),
             description: description.trim(),
             coverImage,
             coverImageId,
-            reg_time: regTime,               // ✅ 기존 등록일 유지
-            update_time: formatDateToYMD(),  // ✅ 오늘 날짜로 수정일 저장
-            owner: fromState.owner,  //로컬유저인식
+            reg_time: regTime,
+            update_time: apiPayload.update_date,
+            owner: fromState.owner,
         };
 
-        // 🔥 중앙 bookList에서 이 책만 교체 (Home / 다른 곳에서 공유)
+        // 중앙 bookList에서 이 책만 교체
         if (typeof setBookList === "function") {
             setBookList((prev) =>
-                prev.map((b) => (b.id === id ? payload : b))
+                prev.map((b) => (b.id === id ? updatedBook : b))
             );
         } else {
             console.warn("setBookList가 안 넘어왔습니다.");
         }
 
-        alert("수정 완료!");
+        if (apiSuccess) {
+            alert("수정 완료! (서버에도 반영됨)");
+        } else {
+            alert(
+                "수정 완료! (지금은 서버가 없어서 브라우저 안에서만 반영됩니다)"
+            );
+        }
 
-        // 🔥 MyPage 쪽에서 기존 로직(updatedBook)도 활용하고 싶다면 이름 맞추기
+        // MyPage 쪽에서 updatedBook 사용
         navigate("/mypage", {
             state: {
-                updatedBook: payload, // ✅ MyPage의 updatedBook 과 이름 맞춤
+                updatedBook,
             },
         });
     };

@@ -68,7 +68,9 @@ function AiImagePage() {
 
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
-    const [image, setImage] = useState(null); // { imgId, bookId, imgUrl }
+
+    // image: { imageId, bookId, imgUrl }
+    const [image, setImage] = useState(null);
     const [error, setError] = useState(null);
 
     // ==============================
@@ -111,7 +113,9 @@ function AiImagePage() {
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
                 console.error("OpenAI error:", errData);
-                throw new Error(errData.error?.message || "OpenAI 요청 실패");
+                throw new Error(
+                    errData.error?.message || "OpenAI 요청 실패"
+                );
             }
 
             const data = await response.json();
@@ -122,11 +126,11 @@ function AiImagePage() {
 
             console.log("생성된 이미지 URL:", imageUrl);
 
-            // ✅ 프론트 상태에 저장
+            // ✅ 프론트 상태에 저장 (백엔드와 매핑되는 필드 이름으로 관리)
             setImage({
-                imgId: Date.now(), // 프론트 임시 id
+                imageId: Date.now(), // 프론트 임시 id (백엔드 imageId 자리에 대응)
                 bookId,
-                imgUrl: imageUrl,
+                imgUrl: imageUrl,    // 백엔드 img_url
             });
         } catch (e) {
             console.error(e);
@@ -146,11 +150,8 @@ function AiImagePage() {
         const commonState = {
             // ✅ Create / Update에서 기대하는 키 이름
             id: bookId,
-            coverImage: image.imgUrl,
-            imageId: image.imgId,
-
-            // 혹시 예전 코드에서 book_id를 쓰고 있다면 대비 차원에서 같이 보냄 (선택)
-            // book_id: bookId,
+            coverImage: image.imgUrl,       // BookCreate/Update에서 img_url 로 변환
+            imageId: image.imageId,         // 이미지 식별자 (PUT /api/images/{imageId} 대비)
 
             // 기존 입력값 유지
             title: bookTitle,
@@ -270,7 +271,10 @@ function AiImagePage() {
                         disabled={loading}
                         startIcon={
                             loading ? (
-                                <CircularProgress size={18} color="inherit" />
+                                <CircularProgress
+                                    size={18}
+                                    color="inherit"
+                                />
                             ) : null
                         }
                     >
@@ -330,7 +334,7 @@ function AiImagePage() {
                                     variant="caption"
                                     color="text.secondary"
                                 >
-                                    img_id : {image.imgId} / book_id :{" "}
+                                    image_id : {image.imageId} / book_id :{" "}
                                     {image.bookId}
                                 </Typography>
                             </CardContent>

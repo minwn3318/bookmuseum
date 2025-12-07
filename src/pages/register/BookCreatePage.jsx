@@ -70,7 +70,7 @@ function BookCreatePage({ setBookList }) {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
@@ -78,6 +78,7 @@ function BookCreatePage({ setBookList }) {
             return;
         }
 
+        // ✅ 프론트에서 쓰는 구조 (지금까지 써온 payload)
         const payload = {
             id: bookId,
             title: title.trim(),
@@ -90,11 +91,55 @@ function BookCreatePage({ setBookList }) {
             owner: currentUser, // ✅ 이 책의 작성자
         };
 
-        console.log("도서 등록 데이터:", payload);
-        alert("도서 등록이 완료되었습니다!");
+        // ✅ 백엔드 스펙에 맞는 구조 (POST /api/books)
+        const apiPayload = {
+            title: payload.title,
+            author: payload.author,
+            content: payload.description,
+            img_url: payload.coverImage,
+            reg_date: payload.reg_time,
+        };
 
-        // 전역 bookList에 추가
-        setBookList((prev) => [...prev, payload]);
+        let apiSuccess = false;
+
+        try {
+            const res = await fetch("/api/books", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(apiPayload),
+            });
+
+            if (res.ok) {
+                const data = await res.json().catch(() => null); // { status, message } 예상
+                if (!data || data.status === "success") {
+                    apiSuccess = true;
+                    console.log("도서 등록 API 성공:", data);
+                } else {
+                    console.warn("도서 등록 API 응답 실패:", data);
+                }
+            } else {
+                console.warn("도서 등록 API HTTP 오류:", res.status);
+            }
+        } catch (error) {
+            console.warn("도서 등록 API 호출 실패(서버 미구동/연결 문제):", error);
+        }
+
+        // ✅ 백엔드 성공 여부와 상관없이, 프론트에서는 저장 & 이동
+        console.log("도서 등록 데이터(프론트):", payload);
+
+        if (typeof setBookList === "function") {
+            setBookList((prev) => [...prev, payload]);
+        }
+
+        if (apiSuccess) {
+            alert("도서 등록이 완료되었습니다! (서버에도 저장됨)");
+        } else {
+            alert(
+                "도서 등록이 완료되었습니다! (지금은 서버가 없어서 브라우저 안에만 저장됩니다)"
+            );
+        }
 
         // 마이페이지로 이동 (state 안 넘겨도 됨)
         navigate("/mypage");
