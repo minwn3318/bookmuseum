@@ -12,7 +12,7 @@ export default function BookListItem({ title, author }) {
                 borderBottom: "1px solid #eee",
             }}
         >
-            {/* 왼쪽에 심볼/동그라미 자리 */}
+            {/* 왼쪽에 심볼/동그라미 자리dd */}
             <Box
                 sx={{
                     width: 8,
