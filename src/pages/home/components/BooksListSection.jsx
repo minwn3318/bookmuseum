@@ -6,22 +6,8 @@ import BookCard from "./BookCard";
 export default function BooksListSection({ books, onToggleLike }) {
     const navigate = useNavigate();
 
-    // ✅ 카드 클릭 시 상세 페이지 이동 + state로 데이터 전달
     const handleGoDetail = (book) => {
-        navigate("/detail", {
-            state: {
-                book: {
-                    id: book.id,
-                    title: book.title,
-                    author: book.author,
-                    description: book.description || "",
-                    image: book.coverImage || book.image || book.imageUrl || null,
-                    imageId: book.imageId || null,
-                    reg_time: book.reg_time || null,
-                    update_time: book.update_time || null,
-                },
-            },
-        });
+        navigate("/detail", { state: { book } });
     };
 
     return (
@@ -30,7 +16,6 @@ export default function BooksListSection({ books, onToggleLike }) {
                 도서 목록
             </Typography>
 
-            {/* 카드 그리드 */}
             <Box
                 sx={{
                     display: "grid",
@@ -42,15 +27,15 @@ export default function BooksListSection({ books, onToggleLike }) {
                     <Box
                         key={book.id}
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleGoDetail(book)}   // ✅ 클릭 시 상세 이동
+                        onClick={() => handleGoDetail(book)}
                     >
                         <BookCard
                             id={book.id}
                             title={book.title}
                             author={book.author}
                             liked={book.liked}
-                            imageUrl={book.coverImage || book.image || book.imageUrl || null}
-                            onToggleLike={() => onToggleLike(book.id)}
+                            imageUrl={book.coverImage}
+                            onToggleLike={() => onToggleLike(book.id)}  // 🔥 핵심 수정
                         />
                     </Box>
                 ))}
