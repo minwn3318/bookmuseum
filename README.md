@@ -80,8 +80,14 @@ BookMuseum 프론트엔드는 React-router, axios 비동기 함수, status 상�
             });
 
 ```
-
-## 6. 프로젝트 설계 문서 링크 (optional)
+## 6. 설치 및 실행방법
+```
+git clone https://github.com/...
+cd frontend
+npm install
+npm start
+```
+## 7. 프로젝트 설계 문서 링크 
 프로젝트 전반의 흐름, ERD 구조, API 명세서, 협업 규칙 등이 담겨 있습니다.
 📄 프로젝트 흐름(notion)
 ```
@@ -96,7 +102,7 @@ BookMuseum 프론트엔드는 React-router, axios 비동기 함수, status 상�
 ```
 
 
-## 7. 개발 진행중 배운 점 및 개선점 (optional)
+## 8. 개발 진행중 배운 점 및 개선점 
 ### 🔍 1) — 컴포넌트 구조화와 재사용성의 중요성
 
 - 공통 UI(버튼, 카드, 모달 등)를 컴포넌트화하면서 유지보수성이 크게 향상되었다.
