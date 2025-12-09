@@ -21,14 +21,10 @@
 - localStorage 관리
 
 ## 4. UI 디자인
-### 메인 페이지
-![MainPage](https://github.com/bookfront/bookmuseum/assets/mainpage.png)
-
-### 마이페이지
-![MyPage](https://github.com/bookfront/bookmuseum/assets/mypage.png)
-
-### 등록 페이지
-![Register](https://github.com/bookfront/bookmuseum/assets/register.png)
+📄 UI 설계(Figma)
+```
+🔗 https://www.figma.com/design/zsT7VhkMluKt9uq4AteEPI/BOOK-UI
+```
 
 ## 5. 시스템 아키텍처 구조
 BookMuseum 프론트엔드는 React-router, axios 비동기 함수, status 상태관리 시스템
@@ -98,10 +94,7 @@ BookMuseum 프론트엔드는 React-router, axios 비동기 함수, status 상�
 
 🔗 https://docs.google.com/spreadsheets/d/131vSMyB1M9gsBOHBgG41y6cmInuIWBZRxlcFOYFgs3s/edit?usp=sharing
 ```
-📄 UI 설계(Figma)
-```
-🔗 https://www.figma.com/design/zsT7VhkMluKt9uq4AteEPI/BOOK-UI
-```
+
 
 ## 7. 개발 진행중 배운 점 및 개선점 (optional)
 ### 🔍 1) — 컴포넌트 구조화와 재사용성의 중요성
